@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Betânia — Campanhas 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d0f14;--surface:#161820;--surface2:#1e2029;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);--text:#f0ede8;--muted:#8a8d9a;--faint:#4a4d5a;--accent:#e8c97a;--accent2:#5b9cf6;--green:#5ecb94;--coral:#e87272;--purple:#a78bfa;--teal:#4dd9ac;--font:'DM Sans',sans-serif;--serif:'DM Serif Display',serif}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh}
+/* Loading */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:999}
+#loading .spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+#loading p{font-size:13px;color:var(--muted)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Layout */
+.header{padding:36px 48px 0}
+.header-top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:24px}
+.header-left h1{font-family:var(--serif);font-size:34px;font-weight:400;letter-spacing:-0.5px;line-height:1.1}
+.header-left h1 em{color:var(--accent);font-style:italic}
+.header-sub{font-size:13px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:16px}
+.header-sub span::before{content:'·';margin-right:16px;color:var(--faint)}
+.header-sub span:first-child::before{display:none}
+.header-badge{font-size:11px;padding:4px 12px;border-radius:99px;border:1px solid var(--border2);color:var(--muted);letter-spacing:.05em;white-space:nowrap}
+.tabs-nav{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
+.tab-btn{font-family:var(--font);font-size:13px;font-weight:400;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;padding:11px 24px 12px;cursor:pointer;transition:color .18s,border-color .18s;margin-bottom:-1px;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.page{display:none;padding:32px 48px}
+.page.active{display:block}
+.section-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:14px;font-weight:500}
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:32px}
+.kpi-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+.kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 16px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi-card:hover{border-color:var(--border2)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ab,transparent);border-radius:12px 12px 0 0}
+.kpi-card.gold::before{--ab:var(--accent)}.kpi-card.blue::before{--ab:var(--accent2)}.kpi-card.green::before{--ab:var(--green)}.kpi-card.teal::before{--ab:var(--teal)}.kpi-card.coral::before{--ab:var(--coral)}.kpi-card.purple::before{--ab:var(--purple)}
+.kpi-label{font-size:11px;color:var(--muted);margin-bottom:8px}
+.kpi-value{font-size:24px;font-weight:300;color:var(--text);letter-spacing:-0.5px;line-height:1}
+.kpi-sub{font-size:11px;color:var(--faint);margin-top:5px}
+.chart-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:14px}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.chart-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:32px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;transition:border-color .2s}
+.chart-card:hover{border-color:var(--border2)}
+.chart-card.mb{margin-bottom:32px}
+.chart-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px}
+.chart-title{font-size:13px;font-weight:500;color:var(--text)}
+.chart-legend{display:flex;gap:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:32px}
+.table-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);text-align:left;font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap}
+thead th.r{text-align:right}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--surface2)}
+tbody td{padding:10px 14px;font-size:12px;color:var(--text);white-space:nowrap;vertical-align:middle}
+tbody td.r{text-align:right;color:var(--muted)}
+tbody td.r strong{color:var(--text)}
+.badge{font-size:10px;padding:2px 9px;border-radius:99px;font-weight:500}
+.badge-active{background:rgba(94,203,148,.12);color:var(--green);border:1px solid rgba(94,203,148,.25)}
+.badge-inactive{background:rgba(138,141,154,.12);color:var(--faint);border:1px solid var(--border)}
+.obj-badge{font-size:10px;padding:2px 9px;border-radius:99px;font-weight:500}
+.insight-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:32px}
+.insight-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:15px 18px;display:flex;align-items:flex-start;gap:12px}
+.insight-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.i-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px}
+.i-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.rb-hero{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;margin-bottom:32px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center}
+.rb-hero-title{font-family:var(--serif);font-size:26px;font-weight:400;line-height:1.2;margin-bottom:7px}
+.rb-hero-title em{color:var(--accent);font-style:italic}
+.rb-hero-desc{font-size:13px;color:var(--muted);line-height:1.6;max-width:500px}
+.rb-big{font-size:40px;font-weight:300;color:var(--accent);letter-spacing:-1px;line-height:1;text-align:right}
+.rb-lbl{font-size:11px;color:var(--muted);margin-top:4px;text-align:right}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px}
+.compare-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+.compare-card-header{display:flex;align-items:center;gap:11px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.compare-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.compare-name{font-size:13px;font-weight:500;color:var(--text)}
+.compare-obj{font-size:11px;color:var(--muted);margin-top:2px}
+.compare-row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border)}
+.compare-row:last-child{border-bottom:none}
+.cr-lbl{font-size:11px;color:var(--muted)}
+.cr-val{font-size:13px;font-weight:500;color:var(--text)}
+.month-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.month-tab{font-size:12px;padding:5px 16px;border-radius:99px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font);transition:all .15s}
+.month-tab:hover{color:var(--text)}
+.month-tab.active{background:var(--accent);color:#0d0f14;border-color:var(--accent);font-weight:500}
+.month-section{display:none}
+.month-section.active{display:block}
+.month-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}
+.mkpi{background:var(--surface2);border-radius:10px;padding:14px}
+.mkpi-label{font-size:10px;color:var(--muted);margin-bottom:6px;letter-spacing:.03em}
+.mkpi-value{font-size:20px;font-weight:300;color:var(--text);letter-spacing:-0.3px}
+.mkpi-sub{font-size:10px;color:var(--faint);margin-top:3px}
+.posts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+.post-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;transition:border-color .2s}
+.post-card:hover{border-color:var(--border2)}
+.post-card.top1{border-color:rgba(232,201,122,.4)}
+.post-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;justify-content:space-between}
+.post-star{font-size:10px;padding:2px 7px;border-radius:99px;background:rgba(232,201,122,.15);color:var(--accent);white-space:nowrap}
+.post-metrics{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px}
+.pm-row{display:flex;flex-direction:column;gap:1px}
+.pm-label{font-size:9px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase}
+.pm-val{font-size:13px;font-weight:500;color:var(--text)}
+.pm-val.good{color:var(--green)}
+.pm-val.warn{color:var(--coral)}
+.bar-chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:22px}
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.bar-row:last-child{margin-bottom:0}
+.bar-label{font-size:11px;color:var(--muted);width:170px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;background:var(--surface2);border-radius:4px;height:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.bar-val{font-size:11px;color:var(--text);width:72px;text-align:right;flex-shrink:0;font-weight:500}
+.channel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px}
+.channel-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+.channel-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.channel-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.channel-name{font-size:15px;font-weight:500;color:var(--text)}
+.channel-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.channel-kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ck{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.ck-label{font-size:10px;color:var(--muted);margin-bottom:4px}
+.ck-val{font-size:16px;font-weight:300;color:var(--text)}
+.footer{padding:22px 48px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--faint)}
+.footer-brand{font-family:var(--serif);font-size:14px;color:var(--accent);font-style:italic}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.kpi-card:nth-child(1){animation:fadeUp .35s .04s ease both}.kpi-card:nth-child(2){animation:fadeUp .35s .08s ease both}.kpi-card:nth-child(3){animation:fadeUp .35s .12s ease both}.kpi-card:nth-child(4){animation:fadeUp .35s .16s ease both}.kpi-card:nth-child(5){animation:fadeUp .35s .20s ease both}.kpi-card:nth-child(6){animation:fadeUp .35s .24s ease both}
+</style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><p>Carregando dados...</p></div>
+
+<div id="app" style="display:none">
+
+<header class="header">
+  <div class="header-top">
+    <div class="header-left">
+      <h1>Betânia <em>Campanhas 2026</em></h1>
+      <div class="header-sub" id="headerSub"></div>
+    </div>
+    <div class="header-badge" id="headerBadge"></div>
+  </div>
+  <nav class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('geral',this)">Meta Ads</button>
+    <button class="tab-btn" onclick="switchTab('multicanal',this)">Multi-Canal</button>
+    <button class="tab-btn" onclick="switchTab('rebranding',this)">Rebranding</button>
+    <button class="tab-btn" onclick="switchTab('posts',this)">Posts por Mês</button>
+  </nav>
+</header>
+
+<!-- META ADS -->
+<div id="page-geral" class="page active">
+  <div class="section-title">visão geral — meta ads</div>
+  <div class="kpi-grid" id="metaKpis"></div>
+  <div class="section-title">destaques</div>
+  <div class="insight-strip">
+    <div class="insight-card"><div class="insight-icon" style="background:rgba(232,201,122,.12)">📊</div><div><div class="i-title">CPM de Alcance excelente</div><div class="i-desc">Campanhas de alcance com CPM entre R$ 0,97–1,11, muito abaixo da média do setor.</div></div></div>
+    <div class="insight-card"><div class="insight-icon" style="background:rgba(167,139,250,.12)">🎬</div><div><div class="i-title">Rebranding estreia em Abril</div><div class="i-desc">Campanha de vídeo lançada com R$ 10,4k — maior investimento individual do período.</div></div></div>
+    <div class="insight-card"><div class="insight-icon" style="background:rgba(232,114,114,.12)">⚠️</div><div><div class="i-title">Frequência crescente</div><div class="i-desc">Frequência de Engajamento subiu de 2,58 (jan) para 3,14 (mar) — possível saturação de público.</div></div></div>
+  </div>
+  <div class="section-title">performance mensal</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">Investimento por mês e objetivo</span>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#5b9cf6"></span>Alcance</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#4dd9ac"></span>Engajamento</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#e8c97a"></span>Vídeo</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#e87272"></span>Seguidores</div>
+        </div>
+      </div>
+      <div style="position:relative;height:230px"><canvas id="investChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">Mix de investimento</span></div>
+      <div style="position:relative;height:190px"><canvas id="pieChart"></canvas></div>
+      <div id="pie-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;justify-content:center"></div>
+    </div>
+  </div>
+  <div class="chart-grid-3">
+    <div class="chart-card"><div class="chart-header"><span class="chart-title">Alcance por mês</span></div><div style="position:relative;height:170px"><canvas id="alcChart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-header"><span class="chart-title">Impressões por mês</span></div><div style="position:relative;height:170px"><canvas id="impChart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-header"><span class="chart-title">Frequência média</span></div><div style="position:relative;height:170px"><canvas id="freqChart"></canvas></div></div>
+  </div>
+  <div class="section-title">eficiência por campanha</div>
+  <div class="chart-card mb"><div class="chart-header"><span class="chart-title">CPM por campanha (R$) — vermelho = acima de R$ 4,00</span></div><div style="position:relative;height:310px"><canvas id="cpmChart"></canvas></div></div>
+  <div class="section-title">detalhamento</div>
+  <div class="table-card">
+    <div class="table-header"><span class="chart-title" style="font-size:13px;font-weight:500">Todas as campanhas Meta</span><span id="campCount" style="font-size:11px;color:var(--muted)"></span></div>
+    <table><thead><tr><th>Campanha</th><th>Status</th><th>Objetivo</th><th class="r">Investimento</th><th class="r">Alcance</th><th class="r">Impressões</th><th class="r">CPM</th><th class="r">Freq.</th><th class="r">Engajamentos</th></tr></thead><tbody id="campBody"></tbody></table>
+  </div>
+</div>
+
+<!-- MULTI-CANAL -->
+<div id="page-multicanal" class="page">
+  <div style="margin-bottom:28px">
+    <div style="font-family:var(--serif);font-size:26px;font-weight:400;margin-bottom:5px">Visão <em style="color:var(--accent);font-style:italic">Multi-Canal</em></div>
+    <div style="font-size:12px;color:var(--muted)">Meta · Google / YouTube · TikTok</div>
+  </div>
+  <div class="section-title">consolidado</div>
+  <div class="kpi-grid-3" id="mcKpis"></div>
+  <div class="section-title">comparativo por canal</div>
+  <div class="channel-grid" id="channelCards"></div>
+  <div class="section-title">investimento e impressões por canal</div>
+  <div class="chart-grid-2" style="margin-bottom:14px">
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">Investimento mensal por canal</span>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#5b9cf6"></span>Meta</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#e87272"></span>Google</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#4dd9ac"></span>TikTok</div>
+        </div>
+      </div>
+      <div style="position:relative;height:240px"><canvas id="mcInvestChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">Share de investimento</span></div>
+      <div style="position:relative;height:200px"><canvas id="mcShareChart"></canvas></div>
+      <div id="mc-share-legend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;justify-content:center"></div>
+    </div>
+  </div>
+  <div class="chart-grid-2" style="margin-bottom:32px">
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">Impressões por canal e mês</span>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#5b9cf6"></span>Meta</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#e87272"></span>Google</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#4dd9ac"></span>TikTok</div>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="mcImpChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">CPM por canal e mês (R$)</span>
+        <div class="chart-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#5b9cf6"></span>Meta</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#e87272"></span>Google</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#4dd9ac"></span>TikTok</div>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="mcCpmChart"></canvas></div>
+    </div>
+  </div>
+  <div class="section-title">detalhamento tiktok</div>
+  <div class="table-card">
+    <div class="table-header"><span class="chart-title" style="font-size:13px;font-weight:500">TikTok · campanhas</span></div>
+    <table><thead><tr><th>Campanha</th><th>Mês</th><th class="r">Investimento</th><th class="r">Impressões</th><th class="r">Alcance</th><th class="r">CPM</th><th class="r">Frequência</th><th class="r">Views 25%</th><th class="r">Views 100%</th></tr></thead><tbody id="ttBody"></tbody></table>
+  </div>
+  <div class="section-title">detalhamento google / youtube</div>
+  <div class="table-card">
+    <div class="table-header"><span class="chart-title" style="font-size:13px;font-weight:500">Google / YouTube · por formato</span></div>
+    <table><thead><tr><th>Formato</th><th>Mês</th><th class="r">Investimento</th><th class="r">Impressões</th><th class="r">TrueView</th><th class="r">Views YouTube</th><th class="r">CPM</th><th class="r">CPV</th><th class="r">Engajamentos</th></tr></thead><tbody id="ggBody"></tbody></table>
+  </div>
+</div>
+
+<!-- REBRANDING -->
+<div id="page-rebranding" class="page">
+  <div class="rb-hero">
+    <div>
+      <div class="rb-hero-title">Campanha de <em>Rebranding</em></div>
+      <p class="rb-hero-desc">Duas campanhas ativas em Abril 2026 — lançamento simultâneo de formatos de imagem (alcance) e vídeo (ThruPlays) para maximizar cobertura e memorabilidade com o novo posicionamento da marca.</p>
+    </div>
+    <div><div class="rb-big">R$ 17,3k</div><div class="rb-lbl">investimento Meta</div></div>
+  </div>
+  <div class="section-title">resultado consolidado</div>
+  <div class="kpi-grid-4">
+    <div class="kpi-card gold"><div class="kpi-label">Investimento</div><div class="kpi-value">R$ 17,3k</div><div class="kpi-sub">R$ 17.289,21</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Alcance Combinado</div><div class="kpi-value">3,1M</div><div class="kpi-sub">pessoas únicas (est.)</div></div>
+    <div class="kpi-card teal"><div class="kpi-label">Impressões</div><div class="kpi-value">8,6M</div><div class="kpi-sub">total de exibições</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">ThruPlays</div><div class="kpi-value">415,3k</div><div class="kpi-sub">vídeos completos</div></div>
+  </div>
+  <div class="kpi-grid-4">
+    <div class="kpi-card green"><div class="kpi-label">CPM Médio</div><div class="kpi-value">R$ 3,49</div><div class="kpi-sub">custo por mil impressões</div></div>
+    <div class="kpi-card coral"><div class="kpi-label">Frequência</div><div class="kpi-value">2,57×</div><div class="kpi-sub">exibições por pessoa</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Taxa Conclusão Vídeo</div><div class="kpi-value">24,1%</div><div class="kpi-sub">ThruPlays / impressões</div></div>
+    <div class="kpi-card teal"><div class="kpi-label">Engajamentos</div><div class="kpi-value">448,6k</div><div class="kpi-sub">reações + visualizações</div></div>
+  </div>
+  <div class="section-title">comparativo entre campanhas</div>
+  <div class="compare-grid">
+    <div class="compare-card">
+      <div class="compare-card-header"><div class="compare-dot" style="background:#5b9cf6"></div><div><div class="compare-name">Rebranding · Alcance</div><div class="compare-obj">Objetivo: Alcance · Ativa · Abril 2026</div></div></div>
+      <div class="compare-row"><span class="cr-lbl">Investimento</span><span class="cr-val">R$ 6.915,83</span></div>
+      <div class="compare-row"><span class="cr-lbl">Alcance</span><span class="cr-val">2.682.632 pessoas</span></div>
+      <div class="compare-row"><span class="cr-lbl">Impressões</span><span class="cr-val">6.931.012</span></div>
+      <div class="compare-row"><span class="cr-lbl">CPM</span><span class="cr-val" style="color:var(--green)">R$ 1,00</span></div>
+      <div class="compare-row"><span class="cr-lbl">Frequência</span><span class="cr-val">2,58×</span></div>
+      <div class="compare-row"><span class="cr-lbl">Engajamentos</span><span class="cr-val">33.311</span></div>
+      <div class="compare-row"><span class="cr-lbl">Custo por alcance (mil)</span><span class="cr-val">R$ 2,58</span></div>
+    </div>
+    <div class="compare-card">
+      <div class="compare-card-header"><div class="compare-dot" style="background:#a78bfa"></div><div><div class="compare-name">Rebranding · Visualização de Vídeo</div><div class="compare-obj">Objetivo: ThruPlays · Ativa · Abril 2026</div></div></div>
+      <div class="compare-row"><span class="cr-lbl">Investimento</span><span class="cr-val">R$ 10.373,38</span></div>
+      <div class="compare-row"><span class="cr-lbl">Alcance</span><span class="cr-val">674.197 pessoas</span></div>
+      <div class="compare-row"><span class="cr-lbl">Impressões</span><span class="cr-val">1.721.887</span></div>
+      <div class="compare-row"><span class="cr-lbl">CPM</span><span class="cr-val" style="color:var(--coral)">R$ 6,02</span></div>
+      <div class="compare-row"><span class="cr-lbl">Frequência</span><span class="cr-val">2,55×</span></div>
+      <div class="compare-row"><span class="cr-lbl">ThruPlays</span><span class="cr-val">415.326</span></div>
+      <div class="compare-row"><span class="cr-lbl">Custo por ThruPlay</span><span class="cr-val">R$ 0,025</span></div>
+      <div class="compare-row"><span class="cr-lbl">Taxa de conclusão</span><span class="cr-val">24,1%</span></div>
+    </div>
+  </div>
+  <div class="section-title">análise visual</div>
+  <div class="chart-grid-2" style="margin-bottom:14px">
+    <div class="chart-card">
+      <div class="chart-header"><span class="chart-title">Distribuição do investimento</span>
+        <div class="chart-legend"><div class="legend-item"><span class="legend-dot" style="background:#5b9cf6"></span>Alcance</div><div class="legend-item"><span class="legend-dot" style="background:#a78bfa"></span>Vídeo</div></div>
+      </div>
+      <div style="position:relative;height:200px"><canvas id="rbPieChart"></canvas></div>
+    </div>
+    <div class="chart-card"><div class="chart-header"><span class="chart-title">Alcance vs Impressões</span></div><div style="position:relative;height:200px"><canvas id="rbBarChart"></canvas></div></div>
+  </div>
+  <div class="chart-grid-2" style="margin-bottom:32px">
+    <div class="chart-card"><div class="chart-header"><span class="chart-title">CPM comparativo (R$)</span></div><div style="position:relative;height:160px"><canvas id="rbCpmChart"></canvas></div></div>
+    <div class="chart-card"><div class="chart-header"><span class="chart-title">Funil de vídeo</span></div><div style="position:relative;height:160px"><canvas id="rbFunilChart"></canvas></div></div>
+  </div>
+</div>
+
+<!-- POSTS POR MÊS -->
+<div id="page-posts" class="page">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-family:var(--serif);font-size:22px;font-weight:400">Performance por <em style="color:var(--accent);font-style:italic">anúncio</em></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Métricas detalhadas por criativo Meta · CPM, CPE, CPV</div>
+    </div>
+    <div class="month-tabs" id="monthTabs"></div>
+  </div>
+  <div id="monthSections"></div>
+</div>
+
+</div><!-- /app -->
+
+<footer class="footer">
+  <span class="footer-brand">Betânia</span>
+  <span id="footerText"></span>
+</footer>
+
+<script>
+// ─── HELPERS ──────────────────────────────────────────────────────
+const OC={"Alcance":{l:"#5b9cf6",b:"rgba(91,156,246,0.75)",t:"#5b9cf6"},"Engajamento":{l:"#4dd9ac",b:"rgba(77,217,172,0.75)",t:"#4dd9ac"},"Vídeo":{l:"#e8c97a",b:"rgba(232,201,122,0.75)",t:"#e8c97a"},"Seguidores":{l:"#e87272",b:"rgba(232,114,114,0.75)",t:"#e87272"}};
+const GL="rgba(255,255,255,0.06)",TC="#4a4d5a";
+function S(a,f){return a.reduce((s,x)=>s+(f?f(x):x),0)}
+function fmt(n){return Math.round(n).toLocaleString("pt-BR")}
+function brl(n){return "R$ "+n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtK(n){return n>=1e6?(n/1e6).toFixed(1)+"M":n>=1000?(n/1000).toFixed(0)+"k":String(n)}
+function switchTab(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');btn.classList.add('active')}
+function switchMonth(id,btn){document.querySelectorAll('.month-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.month-tab').forEach(b=>b.classList.remove('active'));document.getElementById('month-'+id).classList.add('active');btn.classList.add('active')}
+
+// ─── LOAD DATA & BUILD ─────────────────────────────────────────────
+fetch('dados.json?v=' + Date.now())
+  .then(r => r.json())
+  .then(D => {
+    buildDashboard(D);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  })
+  .catch(err => {
+    document.getElementById('loading').innerHTML = '<p style="color:#e87272">Erro ao carregar dados.json.<br>Verifique se o arquivo está no repositório.</p>';
+    console.error(err);
+  });
+
+function buildDashboard(D) {
+  const camps = D.metaAds.campanhas;
+  const MOS = [...new Set(camps.map(c=>c.month))];
+  const OBJS = ["Alcance","Engajamento","Vídeo","Seguidores"];
+  const GG = D.google;
+  const TT = D.tiktok;
+
+  // Header
+  const sub = document.getElementById('headerSub');
+  sub.innerHTML = `<span>${D.meta.periodo}</span><span>Meta · Google · TikTok</span><span>Multi-canal</span>`;
+  document.getElementById('headerBadge').textContent = `Exportado em ${D.meta.exportado}`;
+  document.getElementById('footerText').textContent = `Meta · Google · TikTok · ${D.meta.periodo} · ${brl(D.metaAds.totalInvest + D.google.totalInvest + D.tiktok.totalInvest)} investidos`;
+
+  // ── META KPIs ──
+  const metaKpis = [
+    {label:"Investimento Total",value:brl(D.metaAds.totalInvest),sub:`${fmt(D.metaAds.totalInvest/1000)}k gastos`,cls:"gold"},
+    {label:"Alcance Total",value:fmtK(D.metaAds.totalAlcance),sub:"pessoas únicas",cls:"blue"},
+    {label:"Impressões",value:fmtK(D.metaAds.totalImpressoes),sub:"total de exibições",cls:"teal"},
+    {label:"Engajamentos",value:fmtK(D.metaAds.totalEngajamentos),sub:"interações com posts",cls:"green"},
+    {label:"ThruPlays",value:fmtK(D.metaAds.totalThruPlays),sub:"vídeos assistidos",cls:"purple"},
+    {label:"CPM Médio",value:`R$ ${D.metaAds.cpmMedio.toFixed(2)}`,sub:"custo por mil impressões",cls:"coral"},
+  ];
+  document.getElementById('metaKpis').innerHTML = metaKpis.map(k=>`<div class="kpi-card ${k.cls}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div><div class="kpi-sub">${k.sub}</div></div>`).join('');
+
+  // ── META CHARTS ──
+  new Chart(document.getElementById("investChart"),{type:"bar",data:{labels:MOS,datasets:OBJS.map(o=>({label:o,data:MOS.map(m=>S(camps.filter(c=>c.month===m&&c.obj===o),c=>c.invest)),backgroundColor:OC[o].b,borderColor:OC[o].l,borderWidth:1.5,borderRadius:3,borderSkipped:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${brl(ctx.raw)}`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{stacked:true,grid:{color:GL},ticks:{callback:v=>"R$"+Math.round(v/1000)+"k",color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  const iByO=OBJS.map(o=>S(camps.filter(c=>c.obj===o),c=>c.invest));const tI=S(iByO);
+  const pLeg=document.getElementById("pie-legend");
+  OBJS.forEach((o,i)=>{pLeg.innerHTML+=`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:${OC[o].l};display:inline-block"></span>${o} <strong style="color:var(--text)">${((iByO[i]/tI)*100).toFixed(1)}%</strong></div>`});
+  new Chart(document.getElementById("pieChart"),{type:"doughnut",data:{labels:OBJS,datasets:[{data:iByO,backgroundColor:OBJS.map(o=>OC[o].b),borderColor:OBJS.map(o=>OC[o].l),borderWidth:2,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${brl(ctx.raw)} (${((ctx.raw/tI)*100).toFixed(1)}%)`}}}}});
+  new Chart(document.getElementById("alcChart"),{type:"line",data:{labels:MOS,datasets:[{data:MOS.map(m=>S(camps.filter(c=>c.month===m),c=>c.alcance)/1e6),borderColor:"#5b9cf6",backgroundColor:"rgba(91,156,246,0.1)",pointBackgroundColor:"#5b9cf6",pointRadius:5,tension:0.3,fill:true,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{grid:{color:GL},ticks:{callback:v=>v.toFixed(1)+"M",color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  new Chart(document.getElementById("impChart"),{type:"line",data:{labels:MOS,datasets:[{data:MOS.map(m=>S(camps.filter(c=>c.month===m),c=>c.impressoes)/1e6),borderColor:"#4dd9ac",backgroundColor:"rgba(77,217,172,0.1)",pointBackgroundColor:"#4dd9ac",pointRadius:5,tension:0.3,fill:true,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{grid:{color:GL},ticks:{callback:v=>v.toFixed(1)+"M",color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  const fBM=MOS.map(m=>{const cs=camps.filter(c=>c.month===m);return(S(cs,c=>c.freq)/cs.length).toFixed(2)});
+  new Chart(document.getElementById("freqChart"),{type:"bar",data:{labels:MOS,datasets:[{data:fBM,backgroundColor:MOS.map(m=>{const avg=parseFloat(fBM[MOS.indexOf(m)]);return avg>3?"rgba(232,114,114,0.7)":"rgba(232,201,122,0.6)"}),borderColor:MOS.map(m=>{const avg=parseFloat(fBM[MOS.indexOf(m)]);return avg>3?"#e87272":"#e8c97a"}),borderWidth:1.5,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{grid:{color:GL},min:0,max:4.5,ticks:{color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  new Chart(document.getElementById("cpmChart"),{type:"bar",data:{labels:camps.map(c=>c.name),datasets:[{data:camps.map(c=>c.cpm),backgroundColor:camps.map(c=>c.cpm>4?"rgba(232,114,114,0.75)":"rgba(91,156,246,0.75)"),borderColor:camps.map(c=>c.cpm>4?"#e87272":"#5b9cf6"),borderWidth:1.5,borderRadius:3}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` R$ ${ctx.raw.toFixed(2)}`}}},scales:{x:{grid:{color:GL},ticks:{callback:v=>"R$"+v.toFixed(1),color:TC,font:{size:10}},border:{color:"transparent"}},y:{grid:{display:false},ticks:{color:"#8a8d9a",font:{size:11}}}}}});
+  document.getElementById('campCount').textContent = `${camps.length} campanhas · ${D.meta.periodo}`;
+  const tb=document.getElementById("campBody");
+  camps.forEach(c=>{const ob=OC[c.obj];const r=document.createElement("tr");r.innerHTML=`<td style="font-weight:500">${c.name}</td><td><span class="badge ${c.status==="active"?"badge-active":"badge-inactive"}">${c.status==="active"?"Ativa":"Encerrada"}</span></td><td><span class="obj-badge" style="background:${ob.b.replace('0.75','0.15')};color:${ob.t}">${c.obj}</span></td><td class="r"><strong>${brl(c.invest)}</strong></td><td class="r">${fmt(c.alcance)}</td><td class="r">${fmt(c.impressoes)}</td><td class="r" style="color:${c.cpm>4?"#e87272":"#4dd9ac"};font-weight:500">${c.cpm.toFixed(2)}</td><td class="r" style="color:${c.freq>3?"#e87272":"var(--muted)"}">${c.freq.toFixed(2)}</td><td class="r">${fmt(c.eng)}</td>`;tb.appendChild(r)});
+
+  // ── REBRANDING CHARTS ──
+  new Chart(document.getElementById("rbPieChart"),{type:"doughnut",data:{labels:["Alcance","Vídeo"],datasets:[{data:[6915.83,10373.38],backgroundColor:["rgba(91,156,246,0.8)","rgba(167,139,250,0.8)"],borderColor:["#5b9cf6","#a78bfa"],borderWidth:2,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${brl(ctx.raw)} (${((ctx.raw/17289.21)*100).toFixed(1)}%)`}}}}});
+  new Chart(document.getElementById("rbBarChart"),{type:"bar",data:{labels:["Alcance","Vídeo"],datasets:[{label:"Alcance",data:[2682632,674197],backgroundColor:"rgba(91,156,246,0.75)",borderColor:"#5b9cf6",borderWidth:1.5,borderRadius:3},{label:"Impressões",data:[6931012,1721887],backgroundColor:"rgba(167,139,250,0.4)",borderColor:"#a78bfa",borderWidth:1.5,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmt(ctx.raw)}`}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{grid:{color:GL},ticks:{callback:v=>fmtK(v),color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  new Chart(document.getElementById("rbCpmChart"),{type:"bar",data:{labels:["Alcance","Vídeo"],datasets:[{data:[1.00,6.02],backgroundColor:["rgba(91,156,246,0.75)","rgba(232,114,114,0.75)"],borderColor:["#5b9cf6","#e87272"],borderWidth:1.5,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{grid:{color:GL},ticks:{callback:v=>"R$"+v.toFixed(1),color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  new Chart(document.getElementById("rbFunilChart"),{type:"bar",data:{labels:["Impressões","ThruPlays"],datasets:[{data:[1721887,415326],backgroundColor:["rgba(167,139,250,0.45)","rgba(167,139,250,0.9)"],borderColor:"#a78bfa",borderWidth:1.5,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.raw)}`}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{grid:{color:GL},ticks:{callback:v=>fmtK(v),color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+
+  // ── MULTI-CANAL ──
+  const totAll = D.metaAds.totalInvest + D.google.totalInvest + D.tiktok.totalInvest;
+  document.getElementById('mcKpis').innerHTML = `
+    <div class="kpi-card gold"><div class="kpi-label">Investimento Total</div><div class="kpi-value">${fmtK(totAll)}</div><div class="kpi-sub">Meta ${((D.metaAds.totalInvest/totAll)*100).toFixed(1)}% · Google ${((D.google.totalInvest/totAll)*100).toFixed(1)}% · TikTok ${((D.tiktok.totalInvest/totAll)*100).toFixed(1)}%</div></div>
+    <div class="kpi-card teal"><div class="kpi-label">Impressões Totais</div><div class="kpi-value">${fmtK(D.metaAds.totalImpressoes+D.google.totalImpressoes+D.tiktok.totalImpressoes)}</div><div class="kpi-sub">todos os canais</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Views YouTube (público)</div><div class="kpi-value">${fmtK(D.google.totalViewsYoutube)}</div><div class="kpi-sub">visualizações acumuladas</div></div>`;
+
+  document.getElementById('channelCards').innerHTML = `
+    <div class="channel-card"><div class="channel-header"><div class="channel-icon" style="background:rgba(91,156,246,.15)">📘</div><div><div class="channel-name">Meta Ads</div><div class="channel-sub">Facebook · Instagram</div></div></div><div class="channel-kpis"><div class="ck"><div class="ck-label">Investimento</div><div class="ck-val">${fmtK(D.metaAds.totalInvest)}</div></div><div class="ck"><div class="ck-label">Share</div><div class="ck-val">${((D.metaAds.totalInvest/totAll)*100).toFixed(1)}%</div></div><div class="ck"><div class="ck-label">Impressões</div><div class="ck-val">${fmtK(D.metaAds.totalImpressoes)}</div></div><div class="ck"><div class="ck-label">CPM médio</div><div class="ck-val" style="color:var(--green)">R$ ${D.metaAds.cpmMedio.toFixed(2)}</div></div><div class="ck"><div class="ck-label">Alcance</div><div class="ck-val">${fmtK(D.metaAds.totalAlcance)}</div></div><div class="ck"><div class="ck-label">Engajamentos</div><div class="ck-val">${fmtK(D.metaAds.totalEngajamentos)}</div></div><div class="ck"><div class="ck-label">ThruPlays</div><div class="ck-val">${fmtK(D.metaAds.totalThruPlays)}</div></div><div class="ck"><div class="ck-label">CPM</div><div class="ck-val">R$ ${D.metaAds.cpmMedio.toFixed(2)}</div></div></div></div>
+    <div class="channel-card"><div class="channel-header"><div class="channel-icon" style="background:rgba(232,114,114,.15)">▶️</div><div><div class="channel-name">Google / YouTube</div><div class="channel-sub">YouTube · Display</div></div></div><div class="channel-kpis"><div class="ck"><div class="ck-label">Investimento</div><div class="ck-val">${fmtK(D.google.totalInvest)}</div></div><div class="ck"><div class="ck-label">Share</div><div class="ck-val">${((D.google.totalInvest/totAll)*100).toFixed(1)}%</div></div><div class="ck"><div class="ck-label">Impressões</div><div class="ck-val">${fmtK(D.google.totalImpressoes)}</div></div><div class="ck"><div class="ck-label">CPM médio</div><div class="ck-val" style="color:var(--accent)">R$ ${D.google.cpmMedio.toFixed(2)}</div></div><div class="ck"><div class="ck-label">Views YouTube</div><div class="ck-val">${fmtK(D.google.totalViewsYoutube)}</div></div><div class="ck"><div class="ck-label">TrueView</div><div class="ck-val">${fmtK(D.google.totalTrueView)}</div></div><div class="ck"><div class="ck-label">Engajamentos</div><div class="ck-val">${fmtK(D.google.totalEngajamentos)}</div></div><div class="ck"><div class="ck-label">CPV TrueView</div><div class="ck-val">R$ ${D.google.cpvMedio.toFixed(3)}</div></div></div></div>
+    <div class="channel-card"><div class="channel-header"><div class="channel-icon" style="background:rgba(77,217,172,.15)">🎵</div><div><div class="channel-name">TikTok</div><div class="channel-sub">Feed Ads</div></div></div><div class="channel-kpis"><div class="ck"><div class="ck-label">Investimento</div><div class="ck-val">${fmtK(D.tiktok.totalInvest)}</div></div><div class="ck"><div class="ck-label">Share</div><div class="ck-val">${((D.tiktok.totalInvest/totAll)*100).toFixed(1)}%</div></div><div class="ck"><div class="ck-label">Impressões</div><div class="ck-val">${fmtK(D.tiktok.totalImpressoes)}</div></div><div class="ck"><div class="ck-label">CPM médio</div><div class="ck-val" style="color:var(--green)">R$ ${D.tiktok.cpmMedio.toFixed(2)}</div></div><div class="ck"><div class="ck-label">Alcance</div><div class="ck-val">${fmtK(D.tiktok.totalAlcance)}</div></div><div class="ck"><div class="ck-label">Frequência</div><div class="ck-val">${D.tiktok.freqMedia.toFixed(2)}×</div></div><div class="ck"><div class="ck-label">Views 25%</div><div class="ck-val">${fmtK(D.tiktok.views25k)}</div></div><div class="ck"><div class="ck-label">Views 100%</div><div class="ck-val">${fmtK(D.tiktok.views100k)}</div></div></div></div>`;
+
+  const MI=Object.fromEntries(MOS.map(m=>[m,S(camps.filter(c=>c.month===m),c=>c.invest)]));
+  const MIM=Object.fromEntries(MOS.map(m=>[m,S(camps.filter(c=>c.month===m),c=>c.impressoes)]));
+  new Chart(document.getElementById("mcInvestChart"),{type:"bar",data:{labels:MOS,datasets:[{label:"Meta",data:MOS.map(m=>MI[m]),backgroundColor:"rgba(91,156,246,0.75)",borderColor:"#5b9cf6",borderWidth:1.5,borderRadius:3,borderSkipped:false},{label:"Google",data:MOS.map(m=>GG.porMes[m]?.invest||0),backgroundColor:"rgba(232,114,114,0.75)",borderColor:"#e87272",borderWidth:1.5,borderRadius:3,borderSkipped:false},{label:"TikTok",data:TT.campanhas.reduce((acc,c)=>{acc[c.mes]=(acc[c.mes]||0)+c.v;return acc;},{}),backgroundColor:"rgba(77,217,172,0.75)",borderColor:"#4dd9ac",borderWidth:1.5,borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: R$ ${Math.round(ctx.raw).toLocaleString("pt-BR")}`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{stacked:true,grid:{color:GL},ticks:{callback:v=>"R$"+Math.round(v/1000)+"k",color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  const sLeg=document.getElementById("mc-share-legend");
+  [["Meta",D.metaAds.totalInvest,"#5b9cf6"],["Google",D.google.totalInvest,"#e87272"],["TikTok",D.tiktok.totalInvest,"#4dd9ac"]].forEach(([l,v,c])=>{sLeg.innerHTML+=`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)"><span style="width:8px;height:8px;border-radius:2px;background:${c};display:inline-block"></span>${l} <strong style="color:var(--text)">${((v/totAll)*100).toFixed(1)}%</strong></div>`});
+  new Chart(document.getElementById("mcShareChart"),{type:"doughnut",data:{labels:["Meta","Google","TikTok"],datasets:[{data:[D.metaAds.totalInvest,D.google.totalInvest,D.tiktok.totalInvest],backgroundColor:["rgba(91,156,246,0.8)","rgba(232,114,114,0.8)","rgba(77,217,172,0.8)"],borderColor:["#5b9cf6","#e87272","#4dd9ac"],borderWidth:2,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` R$ ${Math.round(ctx.raw).toLocaleString("pt-BR")} (${((ctx.raw/totAll)*100).toFixed(1)}%)`}}}}});
+  const ttInvMap=TT.campanhas.reduce((acc,c)=>{acc[c.mes]=(acc[c.mes]||0)+c.v;return acc;},{});
+  const ttImpMap=TT.campanhas.reduce((acc,c)=>{acc[c.mes]=(acc[c.mes]||0)+c.i;return acc;},{});
+  new Chart(document.getElementById("mcImpChart"),{type:"bar",data:{labels:MOS,datasets:[{label:"Meta",data:MOS.map(m=>MIM[m]/1e6),backgroundColor:"rgba(91,156,246,0.75)",borderColor:"#5b9cf6",borderWidth:1.5,borderRadius:3,borderSkipped:false},{label:"Google",data:MOS.map(m=>(GG.porMes[m]?.impressoes||0)/1e6),backgroundColor:"rgba(232,114,114,0.75)",borderColor:"#e87272",borderWidth:1.5,borderRadius:3,borderSkipped:false},{label:"TikTok",data:MOS.map(m=>(ttImpMap[m]||0)/1e6),backgroundColor:"rgba(77,217,172,0.75)",borderColor:"#4dd9ac",borderWidth:1.5,borderRadius:3,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.raw.toFixed(1)}M`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{stacked:true,grid:{color:GL},ticks:{callback:v=>v.toFixed(0)+"M",color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+  const metaCpmMap=Object.fromEntries(MOS.map(m=>{const cs=camps.filter(c=>c.month===m);const inv=S(cs,c=>c.invest);const imp=S(cs,c=>c.impressoes);return[m,imp>0?(inv/imp*1000).toFixed(2):0]}));
+  const ttCpmMap=Object.fromEntries(MOS.map(m=>{const cs=TT.campanhas.filter(c=>c.mes===m);if(!cs.length)return[m,0];const inv=S(cs,c=>c.v);const imp=S(cs,c=>c.i);return[m,imp>0?(inv/imp*1000).toFixed(2):0]}));
+  new Chart(document.getElementById("mcCpmChart"),{type:"line",data:{labels:MOS,datasets:[{label:"Meta",data:MOS.map(m=>metaCpmMap[m]),borderColor:"#5b9cf6",backgroundColor:"transparent",pointBackgroundColor:"#5b9cf6",pointRadius:5,tension:0.3,borderWidth:2},{label:"Google",data:MOS.map(m=>{const d=GG.porMes[m];return d&&d.impressoes>0?(d.invest/d.impressoes*1000).toFixed(2):0}),borderColor:"#e87272",backgroundColor:"transparent",pointBackgroundColor:"#e87272",pointRadius:5,tension:0.3,borderWidth:2},{label:"TikTok",data:MOS.map(m=>ttCpmMap[m]),borderColor:"#4dd9ac",backgroundColor:"transparent",pointBackgroundColor:"#4dd9ac",pointRadius:5,tension:0.3,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: R$ ${Number(ctx.raw).toFixed(2)}`}}},scales:{x:{grid:{display:false},ticks:{color:TC,font:{size:11}}},y:{grid:{color:GL},ticks:{callback:v=>"R$"+Number(v).toFixed(2),color:TC,font:{size:10}},border:{color:"transparent"}}}}});
+
+  const ttBody=document.getElementById("ttBody");
+  TT.campanhas.forEach(c=>{const r=document.createElement("tr");r.innerHTML=`<td style="font-weight:500">${c.n}</td><td><span style="font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(77,217,172,.12);color:#4dd9ac;font-weight:500">${c.mes}</span></td><td class="r"><strong>${brl(c.v)}</strong></td><td class="r">${fmt(c.i)}</td><td class="r">${fmt(c.alc)}</td><td class="r" style="color:#4dd9ac;font-weight:500">${c.cpm.toFixed(2)}</td><td class="r">${c.freq.toFixed(2)}×</td><td class="r">${fmt(c.v25)}</td><td class="r">${fmt(c.v100)}</td>`;ttBody.appendChild(r)});
+  const ggBody=document.getElementById("ggBody");
+  MOS.forEach(mes=>{(GG.detalhe[mes]||[]).forEach(c=>{const r=document.createElement("tr");r.innerHTML=`<td style="font-weight:500">${c.n}</td><td><span style="font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(232,114,114,.12);color:#e87272;font-weight:500">${mes}</span></td><td class="r"><strong>${brl(c.v)}</strong></td><td class="r">${fmt(c.i)}</td><td class="r">${fmt(c.tv)}</td><td class="r">${fmt(c.vp)}</td><td class="r" style="color:${c.cpm>5?"#e87272":"#4dd9ac"};font-weight:500">${c.cpm.toFixed(2)}</td><td class="r">R$ ${c.cpv.toFixed(3)}</td><td class="r">${fmt(c.e)}</td>`;ggBody.appendChild(r)})});
+
+  // ── POSTS POR MÊS ──
+  const postMonths = Object.keys(D.posts);
+  const tabsEl = document.getElementById('monthTabs');
+  const sectEl = document.getElementById('monthSections');
+  const monthLabels = {Jan:"Janeiro",Fev:"Fevereiro",Mar:"Março",Abr:"Abril"};
+  postMonths.forEach((m,idx)=>{
+    const slug = m.toLowerCase();
+    tabsEl.innerHTML += `<button class="month-tab${idx===0?' active':''}" onclick="switchMonth('ms-${slug}',this)">${monthLabels[m]||m}</button>`;
+    const data = D.posts[m];
+    const tI2=S(data,d=>d.v),tImp=S(data,d=>d.i),tAlc=S(data,d=>d.a),tEng=S(data,d=>d.e);
+    let html = `<div id="ms-${slug}" class="month-section${idx===0?' active':''}">`;
+    html += `<div class="month-kpis"><div class="mkpi"><div class="mkpi-label">Investimento</div><div class="mkpi-value">R$ ${(tI2/1000).toFixed(1)}k</div><div class="mkpi-sub">${data.length} anúncios</div></div><div class="mkpi"><div class="mkpi-label">Impressões</div><div class="mkpi-value">${fmtK(tImp)}</div><div class="mkpi-sub">exibições totais</div></div><div class="mkpi"><div class="mkpi-label">Alcance</div><div class="mkpi-value">${fmtK(tAlc)}</div><div class="mkpi-sub">pessoas únicas</div></div><div class="mkpi"><div class="mkpi-label">Engajamentos</div><div class="mkpi-value">${fmtK(tEng)}</div><div class="mkpi-sub">interações</div></div><div class="mkpi"><div class="mkpi-label">CPM médio</div><div class="mkpi-value">R$ ${(tI2/tImp*1000).toFixed(2)}</div><div class="mkpi-sub">custo / mil imp.</div></div></div>`;
+    const top6=[...data].sort((a,b)=>b.i-a.i).slice(0,6);
+    html += `<div class="section-title" style="margin-bottom:14px">top posts por impressões</div><div class="posts-grid">`;
+    top6.forEach((p,i)=>{const cpmC=p.cpm>4?'warn':'good';html+=`<div class="post-card${i===0?' top1':''}"><div class="post-name"><span>${p.n}</span>${i===0?'<span class="post-star">★ #1</span>':i<3?`<span style="font-size:10px;color:var(--muted)">#${i+1}</span>`:''}</div><div class="post-metrics"><div class="pm-row"><div class="pm-label">Impressões</div><div class="pm-val">${fmtK(p.i)}</div></div><div class="pm-row"><div class="pm-label">Alcance</div><div class="pm-val">${fmtK(p.a)}</div></div><div class="pm-row"><div class="pm-label">Engajamentos</div><div class="pm-val">${fmtK(p.e)}</div></div><div class="pm-row"><div class="pm-label">ThruPlays</div><div class="pm-val">${p.t>0?fmtK(p.t):'—'}</div></div><div class="pm-row"><div class="pm-label">CPM</div><div class="pm-val ${cpmC}">R$ ${p.cpm.toFixed(2)}</div></div><div class="pm-row"><div class="pm-label">CPE</div><div class="pm-val">${p.cpe>0?'R$ '+p.cpe.toFixed(3):'—'}</div></div>${p.t>0?`<div class="pm-row"><div class="pm-label">CPV</div><div class="pm-val">R$ ${p.cpv.toFixed(3)}</div></div>`:''}<div class="pm-row"><div class="pm-label">Investimento</div><div class="pm-val">R$ ${(p.v/1000).toFixed(1)}k</div></div></div></div>`});
+    html += '</div>';
+    const maxI=data[0].i;let bars='';
+    data.forEach(p=>{const pct=(p.i/maxI*100).toFixed(1);const c=p.i===maxI?'#e8c97a':p.cpm<2?'#5b9cf6':'#4dd9ac';bars+=`<div class="bar-row"><div class="bar-label" title="${p.n}">${p.n}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div><div class="bar-val">${fmtK(p.i)}</div></div>`});
+    html += `<div class="section-title" style="margin-bottom:14px">todos os anúncios — impressões</div><div class="bar-chart-wrap">${bars}</div>`;
+    let rows='';data.forEach((p,i)=>{const rank=i<3?`<span style="font-size:10px;color:var(--accent);margin-right:5px">#${i+1}</span>`:'';rows+=`<tr><td style="font-weight:${i===0?'500':'400'}">${rank}${p.n}</td><td class="r"><strong>R$ ${(p.v/1000).toFixed(1)}k</strong></td><td class="r">${fmt(p.i)}</td><td class="r">${fmt(p.a)}</td><td class="r">${fmt(p.e)}</td><td class="r">${p.t>0?fmt(p.t):'—'}</td><td class="r" style="color:${p.cpm>4?'#e87272':'#4dd9ac'};font-weight:500">R$ ${p.cpm.toFixed(2)}</td><td class="r">${p.cpe>0?'R$ '+p.cpe.toFixed(3):'—'}</td><td class="r">${p.t>0&&p.cpv>0&&p.cpv<10?'R$ '+p.cpv.toFixed(3):'—'}</td></tr>`});
+    html += `<div class="section-title" style="margin-bottom:14px">detalhamento completo</div><div class="table-card"><table><thead><tr><th>Anúncio</th><th class="r">Invest.</th><th class="r">Impressões</th><th class="r">Alcance</th><th class="r">Engaj.</th><th class="r">ThruPlays</th><th class="r">CPM</th><th class="r">CPE</th><th class="r">CPV</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    html += '</div>';
+    sectEl.innerHTML += html;
+  });
+}
+</script>
+</body>
+</html>
