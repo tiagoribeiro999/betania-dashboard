@@ -14,6 +14,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 #loading .spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 #loading p{font-size:13px;color:var(--muted)}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Login */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000}
+.login-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:48px 44px;width:100%;max-width:380px;text-align:center}
+.login-logo{font-family:var(--serif);font-size:28px;font-weight:400;margin-bottom:6px}
+.login-logo em{color:var(--accent);font-style:italic}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:36px}
+.login-label{display:block;font-size:11px;color:var(--muted);text-align:left;margin-bottom:7px;letter-spacing:.04em}
+.login-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;color:var(--text);font-family:var(--font);font-size:14px;outline:none;transition:border-color .18s;margin-bottom:16px}
+.login-input:focus{border-color:var(--accent)}
+.login-btn{width:100%;background:var(--accent);color:#0d0f14;border:none;border-radius:10px;padding:13px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:opacity .18s}
+.login-btn:hover{opacity:.88}
+.login-error{font-size:12px;color:var(--coral);margin-top:12px;min-height:18px;transition:opacity .2s}
+.login-error.hidden{opacity:0}
 /* Layout */
 .header{padding:36px 48px 0}
 .header-top{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:24px}
@@ -135,7 +148,18 @@ tbody td.r strong{color:var(--text)}
 </head>
 <body>
 
-<div id="loading"><div class="spinner"></div><p>Carregando dados...</p></div>
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Betânia <em>2026</em></div>
+    <div class="login-sub">Dashboard de Campanhas · Acesso restrito</div>
+    <label class="login-label" for="pwd-input">SENHA DE ACESSO</label>
+    <input id="pwd-input" class="login-input" type="password" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')tryLogin()">
+    <button class="login-btn" onclick="tryLogin()">Entrar</button>
+    <div id="login-error" class="login-error hidden">Senha incorreta. Tente novamente.</div>
+  </div>
+</div>
+
+<div id="loading" style="display:none"><div class="spinner"></div><p>Carregando dados...</p></div>
 
 <div id="app" style="display:none">
 
@@ -352,18 +376,57 @@ function fmtK(n){return n>=1e6?(n/1e6).toFixed(1)+"M":n>=1000?(n/1000).toFixed(0
 function switchTab(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('page-'+id).classList.add('active');btn.classList.add('active')}
 function switchMonth(id,btn){document.querySelectorAll('.month-section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.month-tab').forEach(b=>b.classList.remove('active'));document.getElementById('month-'+id).classList.add('active');btn.classList.add('active')}
 
-// ─── LOAD DATA & BUILD ─────────────────────────────────────────────
-fetch('dados.json?v=' + Date.now())
-  .then(r => r.json())
-  .then(D => {
-    buildDashboard(D);
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-  })
-  .catch(err => {
-    document.getElementById('loading').innerHTML = '<p style="color:#e87272">Erro ao carregar dados.json.<br>Verifique se o arquivo está no repositório.</p>';
-    console.error(err);
-  });
+// ─── LOGIN ────────────────────────────────────────────────────────
+const HASH = '7e2e0a4b3c1f8d9e6b5a2c4f1d3e7a9b2c5f8d1e4a7b0c3f6d9e2a5b8c1f4d7';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function tryLogin() {
+  const val = document.getElementById('pwd-input').value.trim();
+  const hash = await sha256(val);
+  const correct = await sha256('betania-9278');
+  if (hash === correct) {
+    sessionStorage.setItem('bauth', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('loading').style.display = 'flex';
+    loadData();
+  } else {
+    const err = document.getElementById('login-error');
+    err.classList.remove('hidden');
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+    setTimeout(() => err.classList.add('hidden'), 3000);
+  }
+}
+
+function checkAuth() {
+  if (sessionStorage.getItem('bauth') === '1') {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('loading').style.display = 'flex';
+    return true;
+  }
+  return false;
+}
+
+function loadData() {
+  fetch('dados.json?v=' + Date.now())
+    .then(r => r.json())
+    .then(D => {
+      buildDashboard(D);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    })
+    .catch(err => {
+      document.getElementById('loading').innerHTML = '<p style="color:#e87272">Erro ao carregar dados.json.<br>Verifique se o arquivo está no repositório.</p>';
+      console.error(err);
+    });
+}
+
+// Auto-login se já autenticado nesta sessão
+if (checkAuth()) loadData();
 
 function buildDashboard(D) {
   const camps = D.metaAds.campanhas;
